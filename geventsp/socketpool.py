@@ -26,8 +26,8 @@ class SocketConnector(Connector):
         print 'got an exception'
         print str(exception)
 
-    def is_old(self, max_lifetime):
-        return time.time() - self._life > max_lifetime
+    def get_lifetime(self):
+        return self._life
 
     def invalidate(self):
         self._s.close()

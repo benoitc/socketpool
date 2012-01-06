@@ -18,7 +18,7 @@ class Connector(object):
     def handle_exception(self, exception):
         raise NotImplementedError()
 
-    def is_old(self, max_lifetime):
+    def get_lifetime(self):
         raise NotImplementedError()
 
     def invalidate(self):
@@ -44,11 +44,13 @@ class ConnectionPool(object):
         else:
             self.options = options
 
+    def too_old(self, conn):
+        return time.time() - conn.get_lifetime() > self.max_lifetime
+
     def release_connection(self, conn):
         connected = conn.is_connected()
-        old = conn.is_old(self.max_lifetime)
-        if connected and not old:
-            self.pool.put((time.time(), conn))
+        if connected and not self.too_old(conn):
+            self.pool.put((conn.get_lifetime(), conn))
         else:
             conn.invalidate()
 
@@ -59,8 +61,7 @@ class ConnectionPool(object):
         found = None
         if self.size >= self.max_size or pool.qsize():
             for priority, candidate in pool:
-                too_old = candidate.is_old(self.max_lifetime)
-                if too_old:
+                if self.too_old(candidate):
                     # let's drop it
                     continue
 
