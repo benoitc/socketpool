@@ -6,9 +6,9 @@
 import sys
 import contextlib
 try:
-    from Queue import PriorityQueue
+    from Queue import Empty, PriorityQueue
 except ImportError: # py3
-    from queue import PriorityQueue
+    from queue import Empty, PriorityQueue
 
 import time
 
@@ -16,8 +16,21 @@ class MaxTriesError(Exception):
     pass
 
 
+class IPriorityQueue(PriorityQueue):
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        try:
+            result = self.get()
+        except Empty:
+            raise StopIteration
+        return result
+
+
 class ConnectionPool(object):
-    QUEUE_CLASS = PriorityQueue
+    QUEUE_CLASS = IPriorityQueue
     SLEEP = time.sleep
 
     def __init__(self, factory,
@@ -68,7 +81,10 @@ class ConnectionPool(object):
 
         # we got one.. we use it
         if found is not None:
+            print "reuse"
             return found
+
+        print "new"
 
         # we build a new one and send it back
         tries = 0
