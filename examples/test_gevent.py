@@ -32,9 +32,9 @@ if __name__ == '__main__':
             print 'sending'
             sent = conn.send(data)
             print 'send %d bytes' % sent
-            data = conn.recv(1024)
+            echo_data = conn.recv(1024)
             print "got %s" % data
-            assert data == "blahblah"
+            assert data == echo_data
 
     start = time.time()
     jobs = [gevent.spawn(runpool, "blahblah") for _ in xrange(20)]

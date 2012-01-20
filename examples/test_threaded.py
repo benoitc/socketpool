@@ -1,6 +1,7 @@
 import socket
 import threading
 import SocketServer
+import time
 
 from socketpool.pool import ConnectionPool
 from socketpool.conn import SocketConnector
@@ -49,7 +50,10 @@ if __name__ == "__main__":
             print "got %s" % data
             assert data == echo
 
+
+
     for i in xrange(20):
         runpool("Hello World %s" % i)
 
+    time.sleep(0.5)
     server.shutdown()
