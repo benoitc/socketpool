@@ -8,10 +8,12 @@ from socketpool.gpool import GConnectionPool, GSocketConnector
 def echo(sock, address):
     print ('New connection from %s:%s' % address)
 
-    data = sock.recv(1024)
-
-    sock.send(data)
-    print ("echoed %r" % data)
+    while True:
+        data = sock.recv(1024)
+        if not data:
+            break
+        sock.send(data)
+        print ("echoed %r" % data)
 
 
 
@@ -21,7 +23,7 @@ if __name__ == '__main__':
     options = {'host': 'localhost', 'port': 6000}
     pool = GConnectionPool(factory=GSocketConnector, options=options)
     server = StreamServer(('localhost', 6000), echo)
-    gevent.spawn(server.start)
+    gevent.spawn(server.serve_forever)
 
 
     def runpool(data):
@@ -35,7 +37,7 @@ if __name__ == '__main__':
             assert data == "blahblah"
 
     start = time.time()
-    jobs = [gevent.spawn(runpool, "blahblah") for _ in xrange(4)]
+    jobs = [gevent.spawn(runpool, "blahblah") for _ in xrange(20)]
 
     gevent.joinall(jobs)
     delay = time.time() - start
