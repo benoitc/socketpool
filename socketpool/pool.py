@@ -8,23 +8,6 @@ class MaxTriesError(Exception):
     pass
 
 
-class Connector(object):
-    def matches(self, **match_options):
-        raise NotImplementedError()
-
-    def is_connected(self):
-        raise NotImplementedError()
-
-    def handle_exception(self, exception):
-        raise NotImplementedError()
-
-    def get_lifetime(self):
-        raise NotImplementedError()
-
-    def invalidate(self):
-        raise NotImplementedError()
-
-
 class ConnectionPool(object):
 
     def __init__(self, factory,

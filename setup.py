@@ -1,7 +1,6 @@
 import os
 from setuptools import setup, find_packages
 
-requires = ['gevent']
 
-setup(name='geventsp',
+setup(name='socketpool',
       packages=find_packages())

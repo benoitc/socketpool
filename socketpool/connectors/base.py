@@ -1,7 +1,28 @@
-from geventsp.pool import Connector
+# -*- coding: utf-8 -
+#
+# This file is part of socketpool released under the MIT license.
+# See the NOTICE for more information.
+
+
 from gevent import socket
 import socket
 import time
+
+class Connector(object):
+    def matches(self, **match_options):
+        raise NotImplementedError()
+
+    def is_connected(self):
+        raise NotImplementedError()
+
+    def handle_exception(self, exception):
+        raise NotImplementedError()
+
+    def get_lifetime(self):
+        raise NotImplementedError()
+
+    def invalidate(self):
+        raise NotImplementedError()
 
 
 class SocketConnector(Connector):

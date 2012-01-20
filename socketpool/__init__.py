@@ -1,6 +1,6 @@
 import gevent
-from geventsp.pool import ConnectionPool
-from geventsp.socketpool import SocketConnector
+from .pool import ConnectionPool
+from .connectors import SocketConnector
 
 
 
