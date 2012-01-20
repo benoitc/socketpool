@@ -3,8 +3,6 @@
 # This file is part of socketpool released under the MIT license.
 # See the NOTICE for more information.
 
-
-from gevent import socket
 import socket
 import time
 

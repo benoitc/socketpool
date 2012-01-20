@@ -1,7 +1,15 @@
+# -*- coding: utf-8 -
+#
+# This file is part of socketpool released under the MIT license.
+# See the NOTICE for more information.
+
 import sys
 import contextlib
-import gevent
-from gevent.queue import PriorityQueue
+try:
+    from Queue import PriorityQueue
+except ImportError: # py3
+    from queue import PriorityQueue
+
 import time
 
 class MaxTriesError(Exception):
@@ -9,13 +17,15 @@ class MaxTriesError(Exception):
 
 
 class ConnectionPool(object):
+    QUEUE_CLASS = PriorityQueue
+    SLEEP = time.sleep
 
     def __init__(self, factory,
                  retry_max=3, retry_delay=.1,
                  timeout=-1, max_lifetime=600.,
                  max_size=10, options=None):
         self.max_size = max_size
-        self.pool = PriorityQueue()
+        self.pool = self.QUEUE_CLASS()
         self.size = 0
         self.factory = factory
         self.retry_max = retry_max
@@ -77,7 +87,7 @@ class ConnectionPool(object):
                     return new_item
 
             tries += 1
-            gevent.sleep(self.retry_delay)
+            self.SLEEP(self.retry_delay)
 
         if last_error is None:
             raise MaxTriesError()

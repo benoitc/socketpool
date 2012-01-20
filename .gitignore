@@ -1,0 +1,3 @@
+*.pyc
+*.pyo
+socketpool.egg-info
