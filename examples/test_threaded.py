@@ -1,5 +1,6 @@
 import socket
 import threading
+from Queue import *
 import SocketServer
 import time
 
@@ -20,7 +21,6 @@ class EchoServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
 
 
-
 if __name__ == "__main__":
     # Port 0 means to select an arbitrary unused port
     HOST, PORT = "localhost", 0
@@ -39,21 +39,36 @@ if __name__ == "__main__":
 
     options = {'host': ip, 'port': port}
     pool = ConnectionPool(factory=SocketConnector, options=options)
+    q = Queue()
 
-    def runpool(data):
-        print 'ok'
-        with pool.connection() as conn:
-            print 'sending'
-            sent = conn.send(data)
-            print 'send %d bytes' % sent
-            echo = conn.recv(1024)
-            print "got %s" % data
-            assert data == echo
-
-
+    def runpool():
+        while True:
+            try:
+                data = q.get(False)
+            except Empty:
+                break
+            print 'ok'
+            try:
+                with pool.connection() as conn:
+                    print 'sending'
+                    sent = conn.send(data)
+                    print 'send %d bytes' % sent
+                    echo = conn.recv(1024)
+                    print "got %s" % data
+                    assert data == echo
+            finally:
+                q.task_done()
 
     for i in xrange(20):
-        runpool("Hello World %s" % i)
+        q.put("Hello World %s" % i)
 
-    time.sleep(0.5)
+    threads = []
+    for i in range(4):
+        th = threading.Thread(target=runpool)
+        th.daemnon = True
+        th.start()
+        threads.append(th)
+
+    queue.join()
+
     server.shutdown()
