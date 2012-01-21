@@ -8,8 +8,8 @@ from gevent import socket
 from gevent.queue import PriorityQueue
 
 
-from .pool import ConnectionPool
-from .conn import SocketConnector
+from socketpool.pool import ConnectionPool
+from socketpool.conn import SocketConnector
 
 class GConnectionPool(ConnectionPool):
     QUEUE_CLASS = PriorityQueue
