@@ -3,8 +3,10 @@
 # This file is part of socketpool released under the MIT license.
 # See the NOTICE for more information.
 
-import sys
 import contextlib
+import sys
+import threading
+
 try:
     from Queue import Empty, PriorityQueue
 except ImportError: # py3
@@ -28,15 +30,38 @@ class IPriorityQueue(PriorityQueue):
             raise StopIteration
         return result
 
+class ConnectionReaper(threading.Thread):
+    """ connection reaper thread. Open a thread that will murder iddle
+    connections after a delay """
+
+    running = False
+
+    def __init__(self, pool, delay=600):
+        self.pool = pool
+        self.delay = delay
+        threading.Thread.__init__(self)
+        self.setDaemon(True)
+
+    def run(self):
+        self.running = True
+        while True:
+            time.sleep(self.delay)
+            self.pool.murder_connections()
+
+    def ensure_started(self):
+        if not self.running and not self.isAlive():
+            self.start()
 
 class ConnectionPool(object):
     QUEUE_CLASS = IPriorityQueue
     SLEEP = time.sleep
+    REAPER_CLASS = ConnectionReaper
 
     def __init__(self, factory,
                  retry_max=3, retry_delay=.1,
                  timeout=-1, max_lifetime=600.,
-                 max_size=10, options=None):
+                 max_size=10, options=None,
+                 reap_connections=True):
         self.max_size = max_size
         self.pool = self.QUEUE_CLASS()
         self.size = 0
@@ -50,10 +75,29 @@ class ConnectionPool(object):
         else:
             self.options = options
 
+        self._reaper = None
+        if reap_connections:
+            self.start_reaper()
+
     def too_old(self, conn):
         return time.time() - conn.get_lifetime() > self.max_lifetime
 
+    def murder_connections(self):
+        pool = self.pool
+        if pool.qsize():
+            for priority, candidate in pool:
+                if not self.too_old(candidate):
+                    pool.put((priority, candidate))
+
+    def start_reaper(self):
+        self._reaper = ConnectionReaper(self, delay=self.max_lifetime)
+        self._reaper.ensure_started()
+
+
     def release_connection(self, conn):
+        if self._reaper is not None:
+            self._reaper.ensure_started()
+
         connected = conn.is_connected()
         if connected and not self.too_old(conn):
             self.pool.put((conn.get_lifetime(), conn))
@@ -81,10 +125,8 @@ class ConnectionPool(object):
 
         # we got one.. we use it
         if found is not None:
-            print "reuse"
             return found
 
-        print "new"
 
         # we build a new one and send it back
         tries = 0
