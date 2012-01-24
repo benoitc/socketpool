@@ -18,6 +18,7 @@ Example of a simple echo client using Gevent
 --------------------------------------------
 
 ::
+
     import gevent
     from gevent.server import StreamServer
 
