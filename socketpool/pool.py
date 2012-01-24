@@ -70,6 +70,7 @@ class ConnectionPool(object):
 
     def get(self, **options):
         pool = self.pool
+        options.update(self.options)
 
         # first let's try to find a matching one
         found = None
@@ -119,7 +120,6 @@ class ConnectionPool(object):
 
     @contextlib.contextmanager
     def connection(self, **options):
-        options.update(self.options)
         conn = self.get(**options)
         try:
             yield conn
