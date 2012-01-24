@@ -15,7 +15,7 @@ class EchoHandler(SocketServer.BaseRequestHandler):
             if not data:
                 break
             self.request.send(data)
-            print ("echoed %r" % data)
+            print "echoed %r" % data
 
 class EchoServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
@@ -28,14 +28,12 @@ if __name__ == "__main__":
     server = EchoServer((HOST, PORT), EchoHandler)
     ip, port = server.server_address
 
-
     # Start a thread with the server -- that thread will then start one
     # more thread for each request
     server_thread = threading.Thread(target=server.serve_forever)
     # Exit the server thread when the main thread terminates
     server_thread.daemon = True
     server_thread.start()
-    print "Server loop running in thread:", server_thread.name
 
     options = {'host': ip, 'port': port}
     pool = ConnectionPool(factory=SocketConnector, options=options)
@@ -62,12 +60,10 @@ if __name__ == "__main__":
     for i in xrange(20):
         q.put("Hello World %s" % i)
 
-    threads = []
     for i in range(4):
         th = threading.Thread(target=runpool)
         th.daemnon = True
         th.start()
-        threads.append(th)
 
     queue.join()
 
