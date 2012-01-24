@@ -1,0 +1,6 @@
+include NOTICE
+include LICENSE
+include README.rst
+include THANKS
+include UNLICENSE
+recursive-include examples *
