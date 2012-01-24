@@ -1,3 +1,4 @@
 *.pyc
 *.pyo
 socketpool.egg-info
+.DS_Store
