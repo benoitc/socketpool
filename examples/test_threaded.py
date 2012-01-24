@@ -5,7 +5,7 @@ import SocketServer
 import time
 
 from socketpool.pool import ConnectionPool
-from socketpool.conn import SocketConnector
+from socketpool.conn import TcpConnector
 
 class EchoHandler(SocketServer.BaseRequestHandler):
 
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     server_thread.start()
 
     options = {'host': ip, 'port': port}
-    pool = ConnectionPool(factory=SocketConnector, options=options)
+    pool = ConnectionPool(factory=TcpConnector, options=options)
     q = Queue()
 
     def runpool():

@@ -1,7 +1,7 @@
 import eventlet
 
 from socketpool.pool import ConnectionPool
-from socketpool.conn import SocketConnector
+from socketpool.conn import TcpConnector
 
 
 # this handler will be run for each incoming connection in a dedicated greenlet
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     import time
 
     options = {'host': 'localhost', 'port': 6000}
-    pool = ConnectionPool(factory=SocketConnector, options=options,
+    pool = ConnectionPool(factory=TcpConnector, options=options,
             backend="eventlet")
     server = EchoServer('localhost', 6000)
     server.start()

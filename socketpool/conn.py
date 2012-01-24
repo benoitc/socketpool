@@ -23,7 +23,7 @@ class Connector(object):
         raise NotImplementedError()
 
 
-class SocketConnector(Connector):
+class TcpConnector(Connector):
 
     def __init__(self, host, port, backend_mod):
         self._s = backend_mod.Socket(socket.AF_INET, socket.SOCK_STREAM)

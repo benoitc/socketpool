@@ -8,8 +8,6 @@ from gevent import socket
 from gevent import queue
 
 from socketpool.pool import ConnectionPool
-from socketpool.conn import SocketConnector
-
 
 sleep = gevent.sleep
 PriorityQueue = queue.PriorityQueue

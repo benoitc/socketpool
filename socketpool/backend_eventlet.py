@@ -9,8 +9,6 @@ from eventlet.green import socket
 from eventlet import queue
 
 from socketpool.pool import ConnectionPool
-from socketpool.conn import SocketConnector
-
 
 sleep = eventlet.sleep
 Socket = socket.socket
