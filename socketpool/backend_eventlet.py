@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -
 #
-# This file is part of socketpool released under the MIT license.
+# This file is part of socketpool.
 # See the NOTICE for more information.
-
 
 import eventlet
 from eventlet.green import socket
