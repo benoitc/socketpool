@@ -30,7 +30,7 @@ DATA_FILES = [
 
 setup(name='socketpool',
       version='0.1',
-      description = 'Python REST kit',
+      description = 'Python socket pool',
       long_description = long_description,
       classifiers = CLASSIFIERS,
       license = 'BSD',
