@@ -42,15 +42,14 @@ Example of a simple echo client using Gevent
         import time
 
         options = {'host': 'localhost', 'port': 6000}
-        pool = ConnectionPool(factory=TcpConnector, options=options,
-                backend="gevent")
+        pool = ConnectionPool(factory=TcpConnector, backend="gevent")
         server = StreamServer(('localhost', 6000), echo)
         gevent.spawn(server.serve_forever)
 
 
         def runpool(data):
             print 'ok'
-            with pool.connection() as conn:
+            with pool.connection(**options) as conn:
                 print 'sending'
                 sent = conn.send(data)
                 print 'send %d bytes' % sent
