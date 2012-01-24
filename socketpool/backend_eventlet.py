@@ -6,14 +6,16 @@
 
 import eventlet
 from eventlet.green import socket
-from eventlet.queue import PriorityQueue
-
+from eventlet import queue
 
 from socketpool.pool import ConnectionPool
 from socketpool.conn import SocketConnector
 
 
-class IPriorityQueue(PriorityQueue):
+sleep = eventlet.sleep
+Socket = socket.socket
+
+class PriorityQueue(queue.PriorityQueue):
 
     def __iter__(self):
         return self
@@ -25,7 +27,7 @@ class IPriorityQueue(PriorityQueue):
             raise StopIteration
         return result
 
-class EventletConnectionReaper(object):
+class ConnectionReaper(object):
 
     running = False
 
@@ -53,11 +55,3 @@ class EventletConnectionReaper(object):
     def ensure_started(self):
         if not self.running:
             self.start()
-
-class EConnectionPool(ConnectionPool):
-    QUEUE_CLASS = IPriorityQueue
-    SLEEP = eventlet.sleep
-    REAPER_CLASS = EventletConnectionReaper
-
-class ESocketConnector(SocketConnector):
-    SOCKET_CLASS = socket.socket

@@ -5,65 +5,27 @@
 
 import contextlib
 import sys
-import threading
-
-try:
-    from Queue import Empty, PriorityQueue
-except ImportError: # py3
-    from queue import Empty, PriorityQueue
-
 import time
+
+from socketpool.util import load_backend
 
 class MaxTriesError(Exception):
     pass
 
 
-class IPriorityQueue(PriorityQueue):
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        try:
-            result = self.get()
-        except Empty:
-            raise StopIteration
-        return result
-
-class ConnectionReaper(threading.Thread):
-    """ connection reaper thread. Open a thread that will murder iddle
-    connections after a delay """
-
-    running = False
-
-    def __init__(self, pool, delay=600):
-        self.pool = pool
-        self.delay = delay
-        threading.Thread.__init__(self)
-        self.setDaemon(True)
-
-    def run(self):
-        self.running = True
-        while True:
-            time.sleep(self.delay)
-            self.pool.murder_connections()
-
-    def ensure_started(self):
-        if not self.running and not self.isAlive():
-            self.start()
-
 class ConnectionPool(object):
-    QUEUE_CLASS = IPriorityQueue
-    SLEEP = time.sleep
-    REAPER_CLASS = ConnectionReaper
 
     def __init__(self, factory,
                  retry_max=3, retry_delay=.1,
                  timeout=-1, max_lifetime=600.,
                  max_size=10, options=None,
-                 reap_connections=True):
+                 reap_connections=True,
+                 backend="thread"):
+
+        self.backend_mod = load_backend(backend)
+
         self.max_size = max_size
-        self.pool = self.QUEUE_CLASS()
+        self.pool = self.backend_mod.PriorityQueue()
         self.size = 0
         self.factory = factory
         self.retry_max = retry_max
@@ -71,9 +33,10 @@ class ConnectionPool(object):
         self.timeout = timeout
         self.max_lifetime = max_lifetime
         if options is None:
-            self.options = {}
+            self.options = {"backend_mod": self.backend_mod}
         else:
             self.options = options
+            self.options["backend_mod"] = self.backend_mod
 
         self._reaper = None
         if reap_connections:
@@ -90,7 +53,8 @@ class ConnectionPool(object):
                     pool.put((priority, candidate))
 
     def start_reaper(self):
-        self._reaper = ConnectionReaper(self, delay=self.max_lifetime)
+        self._reaper = self.backend_mod.ConnectionReaper(self,
+                delay=self.max_lifetime)
         self._reaper.ensure_started()
 
 
@@ -145,7 +109,7 @@ class ConnectionPool(object):
                     return new_item
 
             tries += 1
-            self.SLEEP(self.retry_delay)
+            self.backend_mod.sleep(self.retry_delay)
 
         if last_error is None:
             raise MaxTriesError()

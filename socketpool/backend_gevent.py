@@ -5,13 +5,18 @@
 
 import gevent
 from gevent import socket
-from gevent.queue import PriorityQueue
-
+from gevent import queue
 
 from socketpool.pool import ConnectionPool
 from socketpool.conn import SocketConnector
 
-class GeventConnectionReaper(gevent.Greenlet):
+
+sleep = gevent.sleep
+PriorityQueue = queue.PriorityQueue
+Socket = socket.socket
+
+
+class ConnectionReaper(gevent.Greenlet):
 
     running = False
 
@@ -29,11 +34,3 @@ class GeventConnectionReaper(gevent.Greenlet):
     def ensure_started(self):
         if not self.running or self.ready():
             self.start()
-
-class GConnectionPool(ConnectionPool):
-    QUEUE_CLASS = PriorityQueue
-    SLEEP = gevent.sleep
-    REAPER_CLASS = GeventConnectionReaper
-
-class GSocketConnector(SocketConnector):
-    SOCKET_CLASS = socket.socket

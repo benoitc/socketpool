@@ -25,10 +25,8 @@ class Connector(object):
 
 class SocketConnector(Connector):
 
-    SOCKET_CLASS = socket.socket
-
-    def __init__(self, host, port):
-        self._s = self.SOCKET_CLASS(socket.AF_INET, socket.SOCK_STREAM)
+    def __init__(self, host, port, backend_mod):
+        self._s = backend_mod.Socket(socket.AF_INET, socket.SOCK_STREAM)
         self._s.connect((host, port))
         self.host = host
         self.port = port

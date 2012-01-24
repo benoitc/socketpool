@@ -1,6 +1,7 @@
 import eventlet
 
-from socketpool.epool import EConnectionPool, ESocketConnector
+from socketpool.pool import ConnectionPool
+from socketpool.conn import SocketConnector
 
 
 # this handler will be run for each incoming connection in a dedicated greenlet
@@ -49,14 +50,12 @@ if __name__ == '__main__':
     import time
 
     options = {'host': 'localhost', 'port': 6000}
-    pool = EConnectionPool(factory=ESocketConnector, options=options)
+    pool = ConnectionPool(factory=SocketConnector, options=options,
+            backend="eventlet")
     server = EchoServer('localhost', 6000)
     server.start()
 
     epool = eventlet.GreenPool()
-
-
-
     def runpool(data):
         print 'ok'
         with pool.connection() as conn:
