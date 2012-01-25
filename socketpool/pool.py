@@ -12,7 +12,6 @@ from socketpool.util import load_backend
 class MaxTriesError(Exception):
     pass
 
-
 class ConnectionPool(object):
 
     def __init__(self, factory,
@@ -69,13 +68,14 @@ class ConnectionPool(object):
             conn.invalidate()
 
     def get(self, **options):
-        pool = self.pool
         options.update(self.options)
 
         # first let's try to find a matching one
         found = None
-        if self.size >= self.max_size or pool.qsize():
-            for priority, candidate in pool:
+        i = self.pool.qsize()
+        if self.size >= self.max_size or self.pool.qsize():
+            for priority, candidate in self.pool:
+                i -= 1
                 if self.too_old(candidate):
                     # let's drop it
                     continue
@@ -83,9 +83,12 @@ class ConnectionPool(object):
                 matches = candidate.matches(**options)
                 if not matches:
                     # let's put it back
-                    pool.put((priority, candidate))
+                    self.pool.put((priority, candidate))
                 else:
                     found = candidate
+                    break
+
+                if i <= 0:
                     break
 
         # we got one.. we use it
@@ -116,7 +119,6 @@ class ConnectionPool(object):
             raise MaxTriesError()
         else:
             raise last_error
-
 
     @contextlib.contextmanager
     def connection(self, **options):

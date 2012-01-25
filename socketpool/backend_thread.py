@@ -22,7 +22,7 @@ class PriorityQueue(queue.PriorityQueue):
 
     def next(self):
         try:
-            result = self.get()
+            result = self.get(block=False)
         except queue.Empty:
             raise StopIteration
         return result
