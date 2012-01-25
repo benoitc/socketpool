@@ -56,7 +56,7 @@ class ConnectionPool(object):
                 delay=self.max_lifetime)
         self._reaper.ensure_started()
 
-    def release_all(self, conn):
+    def release_all(self):
         if self.pool.qsize():
             for priority, conn in self.pool:
                 conn.invalidate()

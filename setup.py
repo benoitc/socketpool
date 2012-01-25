@@ -29,7 +29,7 @@ DATA_FILES = [
 
 
 setup(name='socketpool',
-      version='0.2.0',
+      version='0.2.1',
       description = 'Python socket pool',
       long_description = long_description,
       classifiers = CLASSIFIERS,
