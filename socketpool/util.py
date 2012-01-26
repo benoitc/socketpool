@@ -7,7 +7,6 @@ try:
     from importlib import import_module
 except ImportError:
     import sys
-    import imp
 
     def _resolve_name(name, package, level):
         """Return the absolute name of the module to be imported."""
@@ -40,7 +39,8 @@ except ImportError:
                     break
                 level += 1
             name = _resolve_name(name[level:], package, level)
-        return imp.load_source(name, name)
+        __import__(name)
+        return sys.modules[name]
 
 def load_backend(backend_name):
     """ load pool backend. If this is an external module it should be
