@@ -22,7 +22,7 @@ class ConnectionPool(object):
                  backend="thread"):
 
         self.backend_mod = load_backend(backend)
-
+        self.backend = backend
         self.max_size = max_size
         self.pool = self.backend_mod.PriorityQueue()
         self.size = 0
