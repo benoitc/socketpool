@@ -3,15 +3,15 @@ socketpool
 
 Socketpool - a simple Python socket pool.
 
-Socket pool is a simple socket pool that sumport multiple factory and
-backend. It can easily be used by gevent, eventlet or any other library.
+Socket pool is a simple socket pool that suports multiple factories and
+backends. It can easily be used by gevent, eventlet or any other library.
 
 Usage
 -----
 
-socketpool offers 3 main classes, a `ConnectionPool` class abble to
-accept a factory and a backend, `Connector` and interface class
-inherited by all connector and a default TCP connector `TcpConnector` .
+socketpool offers 3 main classes, a `ConnectionPool` class able to
+accept a factory and a backend, `Connector` an interface class
+inherited by all connectors and a default TCP connector `TcpConnector` .
 
 
 Example of a simple echo client using Gevent
