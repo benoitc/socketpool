@@ -89,8 +89,9 @@ class ConnectionPool(object):
                     # let's put it back
                     self.pool.put((priority, candidate))
                 else:
-                    found = candidate
-                    break
+                    if candidate.is_connected():
+                        found = candidate
+                        break
 
                 if i <= 0:
                     break

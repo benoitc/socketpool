@@ -3,6 +3,7 @@
 # This file is part of socketpool.
 # See the NOTICE for more information.
 
+import select
 import socket
 import time
 
@@ -30,6 +31,7 @@ class TcpConnector(Connector):
         self._s.connect((host, port))
         self.host = host
         self.port = port
+        self.backend_mod = backend_mod
         self._connected = True
         self._life = time.time()
 
@@ -39,7 +41,15 @@ class TcpConnector(Connector):
         return target_host == self.host and target_port == self.port
 
     def is_connected(self):
-        return self._connected
+        if self._connected:
+            try:
+                r, _, _ = self.backend_mod.Select([self._s], [], [], 0)
+                if not r:
+                    return True
+            except (ValueError, select.error,):
+                return False
+            self.close()
+        return False
 
     def handle_exception(self, exception):
         print 'got an exception'

@@ -3,6 +3,7 @@
 # This file is part of socketpool.
 # See the NOTICE for more information.
 
+import select
 import socket
 import threading
 import time
@@ -12,8 +13,10 @@ try:
 except ImportError: # py3
     import queue
 
+Select = select.select
 Socket = socket.socket
 sleep = time.sleep
+
 
 class PriorityQueue(queue.PriorityQueue):
 
