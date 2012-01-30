@@ -6,14 +6,15 @@
 import gevent
 from gevent import select
 from gevent import socket
-from gevent import queue
+from gevent.queue import PriorityQueue, Empty
 
 from socketpool.pool import ConnectionPool
 
 sleep = gevent.sleep
-PriorityQueue = queue.PriorityQueue
 Socket = socket.socket
 Select = select.select
+
+
 
 class ConnectionReaper(gevent.Greenlet):
 

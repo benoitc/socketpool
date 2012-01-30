@@ -9,26 +9,14 @@ import threading
 import time
 
 try:
-    import Queue as queue
+    from Queue import PriorityQueue, Empty
 except ImportError: # py3
-    import queue
+    from queue import PriorityQueue, Empty
 
 Select = select.select
 Socket = socket.socket
 sleep = time.sleep
 
-
-class PriorityQueue(queue.PriorityQueue):
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        try:
-            result = self.get(block=False)
-        except queue.Empty:
-            raise StopIteration
-        return result
 
 class ConnectionReaper(threading.Thread):
     """ connection reaper thread. Open a thread that will murder iddle

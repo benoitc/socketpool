@@ -13,18 +13,8 @@ from socketpool.pool import ConnectionPool
 sleep = eventlet.sleep
 Socket = socket.socket
 Select = select.select
-
-class PriorityQueue(queue.PriorityQueue):
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        try:
-            result = self.get()
-        except Empty:
-            raise StopIteration
-        return result
+Empty = queue.Empty
+PriorityQueue = queue.PriorityQueue
 
 class ConnectionReaper(object):
 

@@ -12,6 +12,28 @@ from socketpool.util import load_backend
 class MaxTriesError(Exception):
     pass
 
+
+class ConnectionPriorityQueue(object):
+    def __init__(self, backend_mod):
+        self.queue = backend_mod.PriorityQueue()
+        self.Empty = backend_mod.Empty
+
+    def qsize(self):
+        return self.queue.qsize()
+
+    def put(self, arg):
+        self.queue.put(arg)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        try:
+            return self.queue.get(block=False)
+        except self.Empty:
+            raise StopIteration
+
+
 class ConnectionPool(object):
 
     def __init__(self, factory,
@@ -24,7 +46,7 @@ class ConnectionPool(object):
         self.backend_mod = load_backend(backend)
         self.backend = backend
         self.max_size = max_size
-        self.pool = self.backend_mod.PriorityQueue()
+        self.pool = ConnectionPriorityQueue(self.backend_mod)
         self.size = 0
         self.factory = factory
         self.retry_max = retry_max
