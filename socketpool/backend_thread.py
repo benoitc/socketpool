@@ -9,9 +9,9 @@ import threading
 import time
 
 try:
-    from Queue import PriorityQueue, Empty
+    from Queue import PriorityQueue, Empty as QueueEmpty
 except ImportError: # py3
-    from queue import PriorityQueue, Empty
+    from queue import PriorityQueue, Empty as QueueEmpty
 
 Select = select.select
 Socket = socket.socket

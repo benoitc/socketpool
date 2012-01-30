@@ -4,17 +4,11 @@
 # See the NOTICE for more information.
 
 import eventlet
-from eventlet.green import select
-from eventlet.green import socket
-from eventlet import queue
+from eventlet import sleep
+from eventlet.green.select import select as Select
+from eventlet.green.socket import socket as Socket
+from eventlet.queue import PriorityQueue, Empty as QueueEmpty
 
-from socketpool.pool import ConnectionPool
-
-sleep = eventlet.sleep
-Socket = socket.socket
-Select = select.select
-Empty = queue.Empty
-PriorityQueue = queue.PriorityQueue
 
 class ConnectionReaper(object):
 

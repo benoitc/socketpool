@@ -4,16 +4,10 @@
 # See the NOTICE for more information.
 
 import gevent
-from gevent import select
-from gevent import socket
-from gevent.queue import PriorityQueue, Empty
-
-from socketpool.pool import ConnectionPool
-
-sleep = gevent.sleep
-Socket = socket.socket
-Select = select.select
-
+from gevent import sleep
+from gevent.select import select as Select
+from gevent.socket import socket as Socket
+from gevent.queue import PriorityQueue, Empty as QueueEmpty
 
 
 class ConnectionReaper(gevent.Greenlet):

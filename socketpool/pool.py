@@ -16,7 +16,7 @@ class MaxTriesError(Exception):
 class ConnectionPriorityQueue(object):
     def __init__(self, backend_mod):
         self.queue = backend_mod.PriorityQueue()
-        self.Empty = backend_mod.Empty
+        self.Empty = backend_mod.QueueEmpty
 
     def qsize(self):
         return self.queue.qsize()
