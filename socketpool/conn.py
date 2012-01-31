@@ -48,7 +48,6 @@ class TcpConnector(Connector):
                     return True
             except (ValueError, select.error,):
                 return False
-            self.close()
         return False
 
     def handle_exception(self, exception):
