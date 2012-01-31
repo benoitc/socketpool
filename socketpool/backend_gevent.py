@@ -11,9 +11,17 @@ from gevent import queue
 from socketpool.pool import ConnectionPool
 
 sleep = gevent.sleep
-PriorityQueue = queue.PriorityQueue
 Socket = socket.socket
 Select = select.select
+
+class PriorityQueue(queue.PriorityQueue):
+
+    def next(self):
+        try:
+            result = self.get(block=False)
+        except queue.Empty:
+            raise StopIteration
+        return result
 
 class ConnectionReaper(gevent.Greenlet):
 
