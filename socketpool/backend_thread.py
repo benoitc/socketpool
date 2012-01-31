@@ -13,22 +13,15 @@ try:
 except ImportError: # py3
     import queue
 
+from socketpool.util import NonbockingPriorityQueueMixin
+
+class PriorityQueue(NonbockingPriorityQueueMixin, queue.PriorityQueue):
+    Empty = queue.Empty
+
 Select = select.select
 Socket = socket.socket
 sleep = time.sleep
 
-
-class PriorityQueue(queue.PriorityQueue):
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        try:
-            result = self.get(block=False)
-        except queue.Empty:
-            raise StopIteration
-        return result
 
 class ConnectionReaper(threading.Thread):
     """ connection reaper thread. Open a thread that will murder iddle

@@ -12,6 +12,7 @@ from socketpool.util import load_backend
 class MaxTriesError(Exception):
     pass
 
+
 class ConnectionPool(object):
 
     def __init__(self, factory,
