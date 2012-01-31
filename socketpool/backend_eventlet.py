@@ -3,12 +3,16 @@
 # This file is part of socketpool.
 # See the NOTICE for more information.
 
+from socketpool.util import NonbockingPriorityQueueMixin
+
 import eventlet
 from eventlet import sleep
 from eventlet.green.select import select as Select
 from eventlet.green.socket import socket as Socket
-from eventlet.queue import PriorityQueue, Empty as QueueEmpty
+from eventlet import queue
 
+class PriorityQueue(NonbockingPriorityQueueMixin, queue.PriorityQueue):
+    Empty = queue.Empty
 
 class ConnectionReaper(object):
 

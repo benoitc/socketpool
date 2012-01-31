@@ -9,9 +9,14 @@ import threading
 import time
 
 try:
-    from Queue import PriorityQueue, Empty as QueueEmpty
+    import Queue as queue
 except ImportError: # py3
-    from queue import PriorityQueue, Empty as QueueEmpty
+    import queue
+
+from socketpool.util import NonbockingPriorityQueueMixin
+
+class PriorityQueue(NonbockingPriorityQueueMixin, queue.PriorityQueue):
+    Empty = queue.Empty
 
 Select = select.select
 Socket = socket.socket

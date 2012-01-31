@@ -3,12 +3,16 @@
 # This file is part of socketpool.
 # See the NOTICE for more information.
 
+from socketpool.util import NonbockingPriorityQueueMixin
+
 import gevent
 from gevent import sleep
 from gevent.select import select as Select
 from gevent.socket import socket as Socket
-from gevent.queue import PriorityQueue, Empty as QueueEmpty
+from gevent import queue
 
+class PriorityQueue(NonbockingPriorityQueueMixin, queue.PriorityQueue):
+    Empty = queue.Empty
 
 class ConnectionReaper(gevent.Greenlet):
 

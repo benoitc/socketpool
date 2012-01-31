@@ -62,3 +62,15 @@ def load_backend(backend_name):
     except ImportError:
         error_msg = "%s isn't a socketpool backend" % backend_name
         raise ImportError(error_msg)
+
+
+class NonbockingPriorityQueueMixin:
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        try:
+            return self.get(block=False)
+        except self.Empty:
+            raise StopIteration
