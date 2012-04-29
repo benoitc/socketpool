@@ -70,6 +70,6 @@ if __name__ == "__main__":
         th.daemnon = True
         th.start()
 
-    queue.join()
+    q.join()
 
     server.shutdown()
