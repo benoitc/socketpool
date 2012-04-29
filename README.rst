@@ -71,13 +71,17 @@ Example of a connector
 
     class TcpConnector(Connector):
 
-        def __init__(self, host, port, backend_mod):
+        def __init__(self, host, port, backend_mod, pool=None):
             self._s = backend_mod.Socket(socket.AF_INET, socket.SOCK_STREAM)
             self._s.connect((host, port))
             self.host = host
             self.port = port
             self._connected = True
             self._life = time.time()
+            self._pool = pool
+    
+        def __del__(self):
+            self.release()
 
         def matches(self, **match_options):
             target_host = match_options.get('host')
@@ -98,6 +102,13 @@ Example of a connector
             self._s.close()
             self._connected = False
             self._life = -1
+
+        def release(self):
+            if self._pool is not None:
+                if self._connected:
+                    self._pool.release_connection(self)
+                else:
+                    self._pool = None
 
         def send(self, data):
             return self._s.send(data)
