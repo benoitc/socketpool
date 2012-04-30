@@ -11,6 +11,7 @@ from gevent import queue
 from socketpool.pool import ConnectionPool
 
 sleep = gevent.sleep
+Semaphore = gevent.coros.BoundedSemaphore
 Socket = socket.socket
 Select = select.select
 

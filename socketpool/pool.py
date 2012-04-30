@@ -39,6 +39,9 @@ class ConnectionPool(object):
             self.options["backend_mod"] = self.backend_mod
             self.options["pool"] = self
 
+        # bounded semaphore to make self.size 'safe'
+        self._sem = self.backend_mod.Semaphore(1)
+
         self._reaper = None
         if reap_connections:
             self.start_reaper()
@@ -63,7 +66,8 @@ class ConnectionPool(object):
     def _reap_connection(self, conn):
         if conn.is_connected():
             conn.invalidate()
-        self.size -= 1
+        with self._sem:
+            self.size -= 1
 
     def release_all(self):
         if self.pool.qsize():
@@ -127,7 +131,8 @@ class ConnectionPool(object):
             else:
                 # we should be connected now
                 if new_item.is_connected():
-                    self.size += 1
+                    with self._sem:
+                        self.size += 1
                     return new_item
 
             tries += 1

@@ -13,6 +13,7 @@ from socketpool.pool import ConnectionPool
 sleep = eventlet.sleep
 Socket = socket.socket
 Select = select.select
+Semaphore = eventlet.semaphore.BoundedSemaphore
 
 class PriorityQueue(queue.PriorityQueue):
 

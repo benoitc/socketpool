@@ -16,6 +16,7 @@ except ImportError: # py3
 Select = select.select
 Socket = socket.socket
 sleep = time.sleep
+Semaphore = threading.BoundedSemaphore
 
 
 class PriorityQueue(queue.PriorityQueue):
