@@ -32,10 +32,12 @@ class ConnectionPool(object):
         self.timeout = timeout
         self.max_lifetime = max_lifetime
         if options is None:
-            self.options = {"backend_mod": self.backend_mod}
+            self.options = {"backend_mod": self.backend_mod,
+                            "pool": self}
         else:
             self.options = options
             self.options["backend_mod"] = self.backend_mod
+            self.options["pool"] = self
 
         self._reaper = None
         if reap_connections:
