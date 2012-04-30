@@ -124,16 +124,17 @@ class ConnectionPool(object):
         last_error = None
 
         while tries < self.retry_max:
-            try:
-                new_item = self.factory(**options)
-            except Exception, e:
-                last_error = e
-            else:
-                # we should be connected now
-                if new_item.is_connected():
-                    with self._sem:
-                        self.size += 1
-                    return new_item
+            if self.size < self.max_size:
+                try:
+                    new_item = self.factory(**options)
+                except Exception, e:
+                    last_error = e
+                else:
+                    # we should be connected now
+                    if new_item.is_connected():
+                        with self._sem:
+                            self.size += 1
+                        return new_item
 
             tries += 1
             self.backend_mod.sleep(self.retry_delay)
