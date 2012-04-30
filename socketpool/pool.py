@@ -61,7 +61,8 @@ class ConnectionPool(object):
         self._reaper.ensure_started()
 
     def _reap_connection(self, conn):
-        conn.invalidate()
+        if conn.is_connected():
+            conn.invalidate()
         self.size -= 1
 
     def release_all(self):
@@ -101,6 +102,10 @@ class ConnectionPool(object):
                     if candidate.is_connected():
                         found = candidate
                         break
+                    else:
+                        # conn is dead for some reason.
+                        # reap it.
+                        self._reap_connection(candidate)
 
                 if i <= 0:
                     break
