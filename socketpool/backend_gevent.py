@@ -7,6 +7,7 @@ import gevent
 from gevent import select
 from gevent import socket
 from gevent import queue
+from gevent import coros
 
 from socketpool.pool import ConnectionPool
 

@@ -87,43 +87,43 @@ class ConnectionPool(object):
     def get(self, **options):
         options.update(self.options)
 
-        # first let's try to find a matching one
         found = None
         i = self.pool.qsize()
-        if self.size >= self.max_size or self.pool.qsize():
-            for priority, candidate in self.pool:
-                i -= 1
-                if self.too_old(candidate):
-                    # let's drop it
-                    self._reap_connection(candidate)
-                    continue
-
-                matches = candidate.matches(**options)
-                if not matches:
-                    # let's put it back
-                    self.pool.put((priority, candidate))
-                else:
-                    if candidate.is_connected():
-                        found = candidate
-                        break
-                    else:
-                        # conn is dead for some reason.
-                        # reap it.
-                        self._reap_connection(candidate)
-
-                if i <= 0:
-                    break
-
-        # we got one.. we use it
-        if found is not None:
-            return found
-
-
-        # we build a new one and send it back
         tries = 0
         last_error = None
 
         while tries < self.retry_max:
+            # first let's try to find a matching one from pool
+            if self.size >= self.max_size or self.pool.qsize():
+                for priority, candidate in self.pool:
+                    i -= 1
+                    if self.too_old(candidate):
+                        # let's drop it
+                        self._reap_connection(candidate)
+                        continue
+
+                    matches = candidate.matches(**options)
+                    if not matches:
+                        # let's put it back
+                        self.pool.put((priority, candidate))
+                    else:
+                        if candidate.is_connected():
+                            found = candidate
+                            break
+                        else:
+                            # conn is dead for some reason.
+                            # reap it.
+                            self._reap_connection(candidate)
+
+                    if i <= 0:
+                        break
+
+            # we got one.. we use it
+            if found is not None:
+                return found
+
+            # didn't get one.
+            # see if we have room to make a new one
             if self.size < self.max_size:
                 try:
                     new_item = self.factory(**options)
