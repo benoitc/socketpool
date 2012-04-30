@@ -53,19 +53,21 @@ class ConnectionPool(object):
                 if not self.too_old(candidate):
                     pool.put((priority, candidate))
                 else:
-                    candidate.invalidate()
-                    self.size -= 1
+                    self._reap_connection(candidate)
 
     def start_reaper(self):
         self._reaper = self.backend_mod.ConnectionReaper(self,
                 delay=self.max_lifetime)
         self._reaper.ensure_started()
 
+    def _reap_connection(self, conn):
+        conn.invalidate()
+        self.size -= 1
+
     def release_all(self):
         if self.pool.qsize():
             for priority, conn in self.pool:
-                conn.invalidate()
-                self.size -= 1
+                self._reap_connection(conn)
 
     def release_connection(self, conn):
         if self._reaper is not None:
@@ -75,8 +77,7 @@ class ConnectionPool(object):
         if connected and not self.too_old(conn):
             self.pool.put((conn.get_lifetime(), conn))
         else:
-            conn.invalidate()
-            self.size -= 1
+            self._reap_connection(conn)
 
     def get(self, **options):
         options.update(self.options)
@@ -88,9 +89,8 @@ class ConnectionPool(object):
             for priority, candidate in self.pool:
                 i -= 1
                 if self.too_old(candidate):
-                    candidate.invalidate()
-                    self.size -= 1
                     # let's drop it
+                    self._reap_connection(candidate)
                     continue
 
                 matches = candidate.matches(**options)
