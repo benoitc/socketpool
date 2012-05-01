@@ -50,13 +50,16 @@ class ConnectionPool(object):
         return time.time() - conn.get_lifetime() > self.max_lifetime
 
     def murder_connections(self):
-        pool = self.pool
-        if pool.qsize():
-            for priority, candidate in pool:
+        current_pool_size = self.pool.qsize()
+        if current_pool_size > 0:
+            for priority, candidate in self.pool:
+                current_pool_size -= 1
                 if not self.too_old(candidate):
-                    pool.put((priority, candidate))
+                    self.pool.put((priority, candidate))
                 else:
                     self._reap_connection(candidate)
+                if current_pool_size <= 0:
+                    break
 
     def start_reaper(self):
         self._reaper = self.backend_mod.ConnectionReaper(self,
