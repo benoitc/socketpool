@@ -94,7 +94,7 @@ class ConnectionPool(object):
 
         while tries < self.retry_max:
             # first let's try to find a matching one from pool
-            if self.size >= self.max_size or self.pool.qsize():
+            if self.pool.qsize():
                 for priority, candidate in self.pool:
                     i -= 1
                     if self.too_old(candidate):
