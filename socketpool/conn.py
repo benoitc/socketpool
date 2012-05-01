@@ -6,6 +6,7 @@
 import select
 import socket
 import time
+import random
 
 class Connector(object):
     def matches(self, **match_options):
@@ -33,7 +34,10 @@ class TcpConnector(Connector):
         self.port = port
         self.backend_mod = backend_mod
         self._connected = True
-        self._life = time.time()
+        # use a 'jiggle' value to make sure there is some
+        # randomization to expiry, to avoid many conns expiring very
+        # closely together.
+        self._life = time.time() - random.randint(0, 10)
         self._pool = pool
 
     def __del__(self):
