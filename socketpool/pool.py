@@ -118,6 +118,9 @@ class ConnectionPool(object):
                 # we should be connected now
                 if new_item.is_connected():
                     return new_item
+                else:
+                    new_item.invalidate()
+                    self.size -=1
 
             tries += 1
             self.backend_mod.sleep(self.retry_delay)
