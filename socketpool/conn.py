@@ -59,8 +59,8 @@ class TcpConnector(Connector):
         return False
 
     def handle_exception(self, exception):
-        print 'got an exception'
-        print str(exception)
+        print('got an exception')
+        print(str(exception))
 
     def get_lifetime(self):
         return self._life
