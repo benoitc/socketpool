@@ -3,6 +3,10 @@
 # This file is part of socketpool.
 # See the NOTICE for more information.
 
+import os
+import select
+import sys
+
 try:
     from importlib import import_module
 except ImportError:
@@ -62,3 +66,59 @@ def load_backend(backend_name):
     except ImportError:
         error_msg = "%s isn't a socketpool backend" % backend_name
         raise ImportError(error_msg)
+
+
+def is_connected(skt):
+    fno = skt.fileno()
+    try:
+        if hasattr(select, "epoll"):
+            ep = select.epoll()
+            ep.register(fno, select.EPOLLOUT | select.EPOLLIN)
+            events = ep.poll(0)
+            for fd, ev in events:
+                if fno == fd and \
+                        (ev & select.EPOLLOUT or ev & select.EPOLLIN):
+                    ep.unregister(fno)
+                    return True
+            ep.unregister(fno)
+        elif hasattr(select, "poll"):
+            p = select.poll()
+            p.register(fno, select.POLLOUT | select.POLLIN)
+            events = p.poll(0)
+            for fd, ev in events:
+                if fno == fd and \
+                        (ev & select.POLLOUT or ev & select.POLLIN):
+                    p.unregister(fno)
+                    return True
+            p.unregister(fno)
+        elif hasattr(select, "kqueue"):
+            kq = select.kqueue()
+            events = [
+                select.kevent(select.KQ_FILTER_READ, select.KQ_EV_ADD),
+                select.kevent(select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
+            ]
+            kq.control(events, 0)
+            kevents = kq.control(None, 10, 0)
+            for ev in kevents:
+                if ev.ident == fno:
+                    if ev.flags & select.KQ_EV_ERROR:
+                        return False
+                    else:
+                        return True
+
+            # delete
+            events = [
+                select.kevent(select.KQ_FILTER_READ, select.KQ_EV_DELETE),
+                select.kevent(select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
+            ]
+            kq.control(events, 0)
+            kq.close()
+            return True
+        else:
+            r, _, _ = select.select([fno], [], [], 0)
+            if not r:
+                return True
+    except (ValueError, select.error,) as e:
+        pass
+
+    return False

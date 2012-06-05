@@ -8,6 +8,8 @@ import socket
 import time
 import random
 
+from socketpool import util
+
 class Connector(object):
     def matches(self, **match_options):
         raise NotImplementedError()
@@ -50,12 +52,7 @@ class TcpConnector(Connector):
 
     def is_connected(self):
         if self._connected:
-            try:
-                r, _, _ = self.backend_mod.Select([self._s], [], [], 0)
-                if not r:
-                    return True
-            except (ValueError, select.error,):
-                return False
+            return util.is_connected(self._s)
         return False
 
     def handle_exception(self, exception):
