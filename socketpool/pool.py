@@ -16,6 +16,33 @@ class MaxConnectionsError(Exception):
     pass
 
 class ConnectionPool(object):
+    """Pool of connections
+
+    This is the main object to maintain connection. Connections are
+    created using the factory instance passed as an option.
+
+    Options:
+    --------
+
+    :attr factory: Instance of socketpool.Connector. See
+        socketpool.conn.TcpConnector for an example
+    :attr retry_max: int, default 3. Numbr of times to retry a
+        connection before raising the MaxTriesError exception.
+    :attr max_lifetime: int, default 600. time in ms we keep a
+        connection in the pool
+    :attr max_size: int, default 10. Maximum number of connections we
+        keep in the pool.
+    :attr max_conn: int, default 150. Maximum number of connections we
+        create before raising the exception MaxConnectionError.
+    :attr options: Options to pass to the factory
+    :attr reap_connection: boolean, default is true. If true a process
+        will be launched in background to kill idle connections.
+    :attr backend: string, default is thread. The socket pool can use
+        different backend to handle process and connections. For now
+        the backends "thread", "gevent" and "eventlet" are supported. But
+        you can add your own backend if you want. For an example of backend,
+        look at the module socketpool.gevent_backend.
+    """
 
     def __init__(self, factory,
                  retry_max=3, retry_delay=.1,
