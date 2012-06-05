@@ -35,7 +35,8 @@ if __name__ == "__main__":
 
     # Start a thread with the server -- that thread will then start one
     # more thread for each request
-    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread = threading.Thread(target=server.serve_forever,
+            kwargs={"poll_interval":0.5})
     # Exit the server thread when the main thread terminates
     server_thread.daemon = True
     server_thread.start()
@@ -53,25 +54,18 @@ if __name__ == "__main__":
             print 'ok'
             try:
                 with pool.connection() as conn:
-                    print ("conn: alive connections: %s" % pool.alive)
+                    print ("conn: alive connections: %s" % pool.alive())
                     print ("conn: pool size: %s" % pool.size())
                     sent = conn.send(data)
                     echo = conn.recv(1024)
                     print "got %s" % data
                     assert data == echo
-
-
-
-
-
             finally:
                 q.task_done()
-            print ("alive connections: %s" % pool.alive)
-            print ("pool size: %s" % pool.size())
 
 
     for i in xrange(20):
-        q.put("Hello World %s" % i)
+        q.put("Hello World %s" % i, False)
 
     for i in range(4):
         th = threading.Thread(target=runpool)
@@ -80,7 +74,8 @@ if __name__ == "__main__":
 
     q.join()
 
-    server.shutdown()
-    print ("final alive connections: %s" % pool.alive)
+    print ("final alive connections: %s" % pool.alive())
     print ("final pool size: %s" % pool.size())
 
+    pool.release_all()
+    server.shutdown()
