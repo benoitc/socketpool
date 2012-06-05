@@ -12,20 +12,25 @@ from socketpool.util import load_backend
 class MaxTriesError(Exception):
     pass
 
+class MaxConnectionsError(Exception):
+    pass
+
 class ConnectionPool(object):
 
     def __init__(self, factory,
                  retry_max=3, retry_delay=.1,
                  timeout=-1, max_lifetime=600.,
-                 max_size=10, options=None,
-                 reap_connections=True,
+                 max_size=10, max_conn=150,
+                 options=None, reap_connections=True,
                  backend="thread"):
 
         self.backend_mod = load_backend(backend)
         self.backend = backend
         self.max_size = max_size
+        self.max_conn = max_conn
         self.pool = self.backend_mod.PriorityQueue()
-        self.size = 0
+        self._alive = 0
+        self._free_conns = 0
         self.factory = factory
         self.retry_max = retry_max
         self.retry_delay = retry_delay
@@ -39,7 +44,7 @@ class ConnectionPool(object):
             self.options["backend_mod"] = self.backend_mod
             self.options["pool"] = self
 
-        # bounded semaphore to make self.size 'safe'
+        # bounded semaphore to make self._alive 'safe'
         self._sem = self.backend_mod.Semaphore(1)
 
         self._reaper = None
@@ -69,8 +74,15 @@ class ConnectionPool(object):
     def _reap_connection(self, conn):
         if conn.is_connected():
             conn.invalidate()
-        with self._sem:
-            self.size -= 1
+
+    def num_connections(self):
+        return (self.alive() + self.size())
+
+    def alive(self):
+        return self._alive
+
+    def size(self):
+        return self.pool.qsize()
 
     def release_all(self):
         if self.pool.qsize():
@@ -81,11 +93,18 @@ class ConnectionPool(object):
         if self._reaper is not None:
             self._reaper.ensure_started()
 
-        connected = conn.is_connected()
-        if connected and not self.too_old(conn):
-            self.pool.put((conn.get_lifetime(), conn))
-        else:
-            self._reap_connection(conn)
+        with self._sem:
+            if self.pool.qsize() < self.max_size:
+                connected = conn.is_connected()
+                if connected and not self.too_old(conn):
+                    self.pool.put((conn.get_lifetime(), conn))
+                else:
+                    self._reap_connection(conn)
+            else:
+                self._reap_connection(conn)
+
+        with self._sem:
+            self._alive -= 1
 
     def get(self, **options):
         options.update(self.options)
@@ -97,6 +116,7 @@ class ConnectionPool(object):
 
         while tries < self.retry_max:
             # first let's try to find a matching one from pool
+
             if self.pool.qsize():
                 for priority, candidate in self.pool:
                     i -= 1
@@ -123,11 +143,13 @@ class ConnectionPool(object):
 
             # we got one.. we use it
             if found is not None:
+                with self._sem:
+                    self._alive += 1
                 return found
 
             # didn't get one.
             # see if we have room to make a new one
-            if self.size < self.max_size:
+            if self._alive < self.max_conn or not self.max_conn:
                 try:
                     new_item = self.factory(**options)
                 except Exception, e:
@@ -136,8 +158,10 @@ class ConnectionPool(object):
                     # we should be connected now
                     if new_item.is_connected():
                         with self._sem:
-                            self.size += 1
-                        return new_item
+                            self._alive += 1
+                            return new_item
+            else:
+                last_error = MaxConnectionsError()
 
             tries += 1
             self.backend_mod.sleep(self.retry_delay)

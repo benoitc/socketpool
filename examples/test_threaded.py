@@ -53,14 +53,22 @@ if __name__ == "__main__":
             print 'ok'
             try:
                 with pool.connection() as conn:
-                    print 'sending'
+                    print ("conn: alive connections: %s" % pool.alive)
+                    print ("conn: pool size: %s" % pool.size())
                     sent = conn.send(data)
-                    print 'send %d bytes' % sent
                     echo = conn.recv(1024)
                     print "got %s" % data
                     assert data == echo
+
+
+
+
+
             finally:
                 q.task_done()
+            print ("alive connections: %s" % pool.alive)
+            print ("pool size: %s" % pool.size())
+
 
     for i in xrange(20):
         q.put("Hello World %s" % i)
@@ -73,3 +81,6 @@ if __name__ == "__main__":
     q.join()
 
     server.shutdown()
+    print ("final alive connections: %s" % pool.alive)
+    print ("final pool size: %s" % pool.size())
+
