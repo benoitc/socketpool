@@ -103,7 +103,6 @@ class ConnectionPool(object):
             else:
                 self._reap_connection(conn)
 
-        with self._sem:
             self._alive -= 1
 
     def get(self, **options):
@@ -161,7 +160,7 @@ class ConnectionPool(object):
                             self._alive += 1
                             return new_item
             else:
-                last_error = MaxConnectionsError()
+                last_error = MaxConnectionsError(self._alive)
 
             tries += 1
             self.backend_mod.sleep(self.retry_delay)
