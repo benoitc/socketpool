@@ -94,11 +94,11 @@ def is_connected(skt):
         elif hasattr(select, "kqueue"):
             kq = select.kqueue()
             events = [
-                select.kevent(select.KQ_FILTER_READ, select.KQ_EV_ADD),
-                select.kevent(select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
+                select.kevent(fno, select.KQ_FILTER_READ, select.KQ_EV_ADD),
+                select.kevent(fno, select.KQ_FILTER_WRITE, select.KQ_EV_ADD)
             ]
             kq.control(events, 0)
-            kevents = kq.control(None, 10, 0)
+            kevents = kq.control(None, 4, 0)
             for ev in kevents:
                 if ev.ident == fno:
                     if ev.flags & select.KQ_EV_ERROR:
@@ -108,8 +108,8 @@ def is_connected(skt):
 
             # delete
             events = [
-                select.kevent(select.KQ_FILTER_READ, select.KQ_EV_DELETE),
-                select.kevent(select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
+                select.kevent(fno, select.KQ_FILTER_READ, select.KQ_EV_DELETE),
+                select.kevent(fno, select.KQ_FILTER_WRITE, select.KQ_EV_DELETE)
             ]
             kq.control(events, 0)
             kq.close()
