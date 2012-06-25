@@ -33,7 +33,9 @@ class ConnectionPool(object):
     :attr max_size: int, default 10. Maximum number of connections we
         keep in the pool.
     :attr max_conn: int, default 150. Maximum number of connections we
-        create before raising the exception MaxConnectionError.
+        create outside the pool before raising the exception
+        MaxConnectionError. If None, the number of connections won't be
+        limited.
     :attr options: Options to pass to the factory
     :attr reap_connection: boolean, default is true. If true a process
         will be launched in background to kill idle connections.
