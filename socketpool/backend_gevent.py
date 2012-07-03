@@ -7,7 +7,12 @@ import gevent
 from gevent import select
 from gevent import socket
 from gevent import queue
-from gevent import coros
+import warnings
+
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    import gevent.coros
+
 
 from socketpool.pool import ConnectionPool
 
