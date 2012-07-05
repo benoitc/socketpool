@@ -7,12 +7,18 @@ import gevent
 from gevent import select
 from gevent import socket
 from gevent import queue
-from gevent import coros
 
 from socketpool.pool import ConnectionPool
 
+try:
+    from gevent import lock
+except ImportError:
+    #gevent < 1.0b2
+    from gevent import coros as lock
+        
+
 sleep = gevent.sleep
-Semaphore = gevent.coros.BoundedSemaphore
+Semaphore = lock.BoundedSemaphore
 Socket = socket.socket
 Select = select.select
 
