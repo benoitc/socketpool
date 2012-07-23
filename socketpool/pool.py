@@ -32,10 +32,6 @@ class ConnectionPool(object):
         connection in the pool
     :attr max_size: int, default 10. Maximum number of connections we
         keep in the pool.
-    :attr max_conn: int, default 150. Maximum number of connections we
-        create outside the pool before raising the exception
-        MaxConnectionError. If None, the number of connections won't be
-        limited.
     :attr options: Options to pass to the factory
     :attr reap_connection: boolean, default is true. If true a process
         will be launched in background to kill idle connections.
@@ -49,16 +45,13 @@ class ConnectionPool(object):
     def __init__(self, factory,
                  retry_max=3, retry_delay=.1,
                  timeout=-1, max_lifetime=600.,
-                 max_size=10, max_conn=150,
-                 options=None, reap_connections=True,
-                 backend="thread"):
+                 max_size=10, options=None,
+                 reap_connections=True, backend="thread"):
 
         self.backend_mod = load_backend(backend)
         self.backend = backend
         self.max_size = max_size
-        self.max_conn = max_conn
         self.pool = self.backend_mod.PriorityQueue()
-        self._alive = 0
         self._free_conns = 0
         self.factory = factory
         self.retry_max = retry_max
@@ -104,12 +97,6 @@ class ConnectionPool(object):
         if conn.is_connected():
             conn.invalidate()
 
-    def num_connections(self):
-        return (self.alive() + self.size())
-
-    def alive(self):
-        return self._alive
-
     def size(self):
         return self.pool.qsize()
 
@@ -131,8 +118,6 @@ class ConnectionPool(object):
                     self._reap_connection(conn)
             else:
                 self._reap_connection(conn)
-
-            self._alive -= 1
 
     def get(self, **options):
         options.update(self.options)
@@ -164,6 +149,7 @@ class ConnectionPool(object):
                         else:
                             # conn is dead for some reason.
                             # reap it.
+                            print "connection is dead"
                             self._reap_connection(candidate)
 
                     if i <= 0:
@@ -171,25 +157,17 @@ class ConnectionPool(object):
 
             # we got one.. we use it
             if found is not None:
-                with self._sem:
-                    self._alive += 1
                 return found
 
-            # didn't get one.
-            # see if we have room to make a new one
-            if self._alive < self.max_conn or not self.max_conn:
-                try:
-                    new_item = self.factory(**options)
-                except Exception, e:
-                    last_error = e
-                else:
-                    # we should be connected now
-                    if new_item.is_connected():
-                        with self._sem:
-                            self._alive += 1
-                            return new_item
+            try:
+                new_item = self.factory(**options)
+            except Exception, e:
+                last_error = e
             else:
-                last_error = MaxConnectionsError(self._alive)
+                # we should be connected now
+                if new_item.is_connected():
+                    with self._sem:
+                        return new_item
 
             tries += 1
             self.backend_mod.sleep(self.retry_delay)

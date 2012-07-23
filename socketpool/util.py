@@ -118,6 +118,8 @@ def is_connected(skt):
             r, _, _ = select.select([fno], [], [], 0)
             if not r:
                 return True
+
+
     except (ValueError, select.error,) as e:
         pass
 

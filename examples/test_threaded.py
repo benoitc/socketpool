@@ -54,7 +54,6 @@ if __name__ == "__main__":
             print 'ok'
             try:
                 with pool.connection() as conn:
-                    print ("conn: alive connections: %s" % pool.alive())
                     print ("conn: pool size: %s" % pool.size())
                     sent = conn.send(data)
                     echo = conn.recv(1024)
@@ -74,7 +73,6 @@ if __name__ == "__main__":
 
     q.join()
 
-    print ("final alive connections: %s" % pool.alive())
     print ("final pool size: %s" % pool.size())
 
     pool.release_all()
