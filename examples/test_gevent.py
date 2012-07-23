@@ -26,15 +26,13 @@ if __name__ == '__main__':
     import time
 
     options = {'host': 'localhost', 'port': 6000}
-    pool = ConnectionPool(factory=TcpConnector, max_conn=20,
-            backend="gevent")
+    pool = ConnectionPool(factory=TcpConnector, backend="gevent")
     server = StreamServer(('localhost', 6000), echo)
     gevent.spawn(server.serve_forever)
 
 
     def runpool(data):
         with pool.connection(**options) as conn:
-            print ("conn: alive connections: %s" % pool.alive())
             print ("conn: pool size: %s" % pool.size())
 
             sent = conn.send(data)
@@ -47,16 +45,13 @@ if __name__ == '__main__':
     gevent.joinall(jobs)
     delay = time.time() - start
 
-    print ("final alive connections: %s" % pool.alive())
     print ("final pool size: %s" % pool.size())
 
     with pool.connection(**options) as conn:
-        print ("conn: alive connections: %s" % pool.alive())
         print ("conn: pool size: %s" % pool.size())
 
         sent = conn.send("hello")
         echo_data = conn.recv(1024)
         assert "hello" == echo_data
 
-    print ("final alive connections: %s" % pool.alive())
     print ("final pool size: %s" % pool.size())

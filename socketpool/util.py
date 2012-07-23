@@ -91,7 +91,7 @@ def is_connected(skt):
                     p.unregister(fno)
                     return True
             p.unregister(fno)
-        elif hasattr(select, "kqueue"):
+        elif hasattr(select, "kqueue") and sys.platform != "darwin":
             kq = select.kqueue()
             events = [
                 select.kevent(fno, select.KQ_FILTER_READ, select.KQ_EV_ADD),
@@ -115,10 +115,14 @@ def is_connected(skt):
             kq.close()
             return True
         else:
+            print "ici"
             r, _, _ = select.select([fno], [], [], 0)
             if not r:
                 return True
+
+
     except (ValueError, select.error,) as e:
         pass
 
+    print "ici :'"
     return False
