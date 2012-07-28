@@ -149,7 +149,6 @@ class ConnectionPool(object):
                         else:
                             # conn is dead for some reason.
                             # reap it.
-                            print "connection is dead"
                             self._reap_connection(candidate)
 
                     if i <= 0:
