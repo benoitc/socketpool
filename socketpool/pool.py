@@ -127,6 +127,8 @@ class ConnectionPool(object):
         tries = 0
         last_error = None
 
+        unmatched = []
+
         while tries < self.retry_max:
             # first let's try to find a matching one from pool
 
@@ -141,7 +143,7 @@ class ConnectionPool(object):
                     matches = candidate.matches(**options)
                     if not matches:
                         # let's put it back
-                        self.pool.put((priority, candidate))
+                        unmatched.append((priority, candidate))
                     else:
                         if candidate.is_connected():
                             found = candidate
@@ -153,6 +155,10 @@ class ConnectionPool(object):
 
                     if i <= 0:
                         break
+
+            if unmatched:
+                for candidate in unmatched:
+                    self.pool.put(candidate)
 
             # we got one.. we use it
             if found is not None:
