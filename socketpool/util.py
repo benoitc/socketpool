@@ -3,8 +3,10 @@
 # This file is part of socketpool.
 # See the NOTICE for more information.
 
+import errno
 import os
 import select
+import socket
 import sys
 
 try:
@@ -69,7 +71,13 @@ def load_backend(backend_name):
 
 
 def is_connected(skt):
-    fno = skt.fileno()
+    try:
+        fno = skt.fileno()
+    except socket.error, e:
+        if e[0] == errno.EBADF:
+            return False
+        raise
+
     try:
         if hasattr(select, "epoll"):
             ep = select.epoll()
@@ -119,7 +127,8 @@ def is_connected(skt):
             if not r:
                 return True
 
-
+    except IOError:
+        pass
     except (ValueError, select.error,) as e:
         pass
 
