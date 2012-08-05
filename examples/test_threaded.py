@@ -4,6 +4,7 @@
 # See the NOTICE for more information.
 
 import socket
+import sys
 import threading
 
 try:
@@ -20,6 +21,15 @@ import time
 
 from socketpool.pool import ConnectionPool
 from socketpool.conn import TcpConnector
+
+PY3 = sys.version_info[0] == 3
+
+if sys.version_info[0] == 3:
+    def s2b(s):
+        return s.encode('latin1')
+else:
+    def s2b(s):
+        return s
 
 class EchoHandler(socketserver.BaseRequestHandler):
 
@@ -72,7 +82,7 @@ if __name__ == "__main__":
 
 
     for i in range(20):
-        q.put(bytes("Hello World %s" % i, 'UTF-8'), False)
+        q.put(s2b("Hello World %s" % i), False)
 
     for i in range(4):
         th = threading.Thread(target=runpool)
