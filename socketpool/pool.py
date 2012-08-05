@@ -51,7 +51,7 @@ class ConnectionPool(object):
         self.backend_mod = load_backend(backend)
         self.backend = backend
         self.max_size = max_size
-        self.pool = self.backend_mod.PriorityQueue()
+        self.pool = getattr(self.backend_mod, 'PriorityQueue')()
         self._free_conns = 0
         self.factory = factory
         self.retry_max = retry_max
