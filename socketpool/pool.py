@@ -166,7 +166,7 @@ class ConnectionPool(object):
 
             try:
                 new_item = self.factory(**options)
-            except Exception, e:
+            except Exception as e:
                 last_error = e
             else:
                 # we should be connected now
@@ -188,7 +188,7 @@ class ConnectionPool(object):
         try:
             yield conn
             # what to do in case of success
-        except Exception, e:
+        except Exception as e:
             conn.handle_exception(e)
         finally:
             self.release_connection(conn)

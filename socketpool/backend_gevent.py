@@ -15,7 +15,7 @@ try:
 except ImportError:
     #gevent < 1.0b2
     from gevent import coros as lock
-        
+
 
 sleep = gevent.sleep
 Semaphore = lock.BoundedSemaphore
@@ -24,12 +24,13 @@ Select = select.select
 
 class PriorityQueue(queue.PriorityQueue):
 
-    def next(self):
+    def __next__(self):
         try:
             result = self.get(block=False)
         except queue.Empty:
             raise StopIteration
         return result
+    next = __next__
 
 class ConnectionReaper(gevent.Greenlet):
 

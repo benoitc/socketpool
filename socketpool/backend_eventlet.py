@@ -20,12 +20,13 @@ class PriorityQueue(queue.PriorityQueue):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         try:
             result = self.get(block=False)
         except queue.Empty:
             raise StopIteration
         return result
+    next = __next__
 
 class ConnectionReaper(object):
 

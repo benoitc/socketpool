@@ -5,14 +5,23 @@
 
 import socket
 import threading
-from Queue import *
-import SocketServer
+
+try:
+    from queue import *
+except ImportError:
+    from Queue import *
+
+try:
+    import SocketServer as socketserver
+except ImportError:
+    import socketserver
+
 import time
 
 from socketpool.pool import ConnectionPool
 from socketpool.conn import TcpConnector
 
-class EchoHandler(SocketServer.BaseRequestHandler):
+class EchoHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         while True:
@@ -20,9 +29,9 @@ class EchoHandler(SocketServer.BaseRequestHandler):
             if not data:
                 break
             self.request.send(data)
-            print "echoed %r" % data
+            print("echoed %r" % data)
 
-class EchoServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class EchoServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 
@@ -51,19 +60,18 @@ if __name__ == "__main__":
                 data = q.get(False)
             except Empty:
                 break
-            print 'ok'
             try:
                 with pool.connection() as conn:
-                    print ("conn: pool size: %s" % pool.size())
+                    print("conn: pool size: %s" % pool.size())
                     sent = conn.send(data)
                     echo = conn.recv(1024)
-                    print "got %s" % data
+                    print("got %s" % data)
                     assert data == echo
             finally:
                 q.task_done()
 
 
-    for i in xrange(20):
+    for i in range(20):
         q.put("Hello World %s" % i, False)
 
     for i in range(4):
