@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
 
     for i in range(20):
-        q.put("Hello World %s" % i, False)
+        q.put(bytes("Hello World %s" % i, 'UTF-8'), False)
 
     for i in range(4):
         th = threading.Thread(target=runpool)
