@@ -48,8 +48,12 @@ class ConnectionPool(object):
                  max_size=10, options=None,
                  reap_connections=True, backend="thread"):
 
-        self.backend_mod = load_backend(backend)
-        self.backend = backend
+        if isinstance(backend, str):
+            self.backend_mod = load_backend(backend)
+            self.backend = backend
+        else:
+            self.backend_mod = backend
+            self.backend = str(getattr(backend, '__name__', backend))
         self.max_size = max_size
         self.pool = getattr(self.backend_mod, 'PriorityQueue')()
         self._free_conns = 0
