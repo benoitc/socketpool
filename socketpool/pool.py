@@ -101,6 +101,7 @@ class ConnectionPool(object):
         if conn.is_connected():
             conn.invalidate()
 
+    @property
     def size(self):
         return self.pool.qsize()
 
