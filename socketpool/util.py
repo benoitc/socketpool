@@ -5,6 +5,7 @@
 
 import errno
 import os
+import platform
 import select
 import socket
 import sys
@@ -70,6 +71,16 @@ def load_backend(backend_name):
         raise ImportError(error_msg)
 
 
+def can_use_kqueue():
+    # See Issue #15. kqueue doesn't work on OS X 10.6 and below.
+    if not hasattr(select, "kqueue"):
+        return False
+
+    if platform.system() == 'Darwin' and platform.mac_ver()[0] < '10.7':
+        return False
+
+    return True
+
 def is_connected(skt):
     try:
         fno = skt.fileno()
@@ -99,7 +110,7 @@ def is_connected(skt):
                     p.unregister(fno)
                     return True
             p.unregister(fno)
-        elif hasattr(select, "kqueue"):
+        elif can_use_kqueue():
             kq = select.kqueue()
             events = [
                 select.kevent(fno, select.KQ_FILTER_READ, select.KQ_EV_ADD),
