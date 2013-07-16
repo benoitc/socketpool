@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     def runpool(data):
         with pool.connection(**options) as conn:
-            print ("conn: pool size: %s" % pool.size())
+            print ("conn: pool size: %s" % pool.size)
 
             sent = conn.send(data)
             echo_data = conn.recv(1024)
@@ -45,13 +45,13 @@ if __name__ == '__main__':
     gevent.joinall(jobs)
     delay = time.time() - start
 
-    print ("final pool size: %s" % pool.size())
+    print ("final pool size: %s" % pool.size)
 
     with pool.connection(**options) as conn:
-        print ("conn: pool size: %s" % pool.size())
+        print ("conn: pool size: %s" % pool.size)
 
         sent = conn.send("hello")
         echo_data = conn.recv(1024)
         assert "hello" == echo_data
 
-    print ("final pool size: %s" % pool.size())
+    print ("final pool size: %s" % pool.size)
