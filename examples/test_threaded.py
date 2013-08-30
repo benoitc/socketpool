@@ -72,7 +72,7 @@ if __name__ == "__main__":
                 break
             try:
                 with pool.connection() as conn:
-                    print("conn: pool size: %s" % pool.size())
+                    print("conn: pool size: %s" % pool.size)
                     sent = conn.send(data)
                     echo = conn.recv(1024)
                     print("got %s" % data)
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     q.join()
 
-    print ("final pool size: %s" % pool.size())
+    print ("final pool size: %s" % pool.size)
 
     pool.release_all()
     server.shutdown()
