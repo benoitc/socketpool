@@ -46,7 +46,8 @@ class ConnectionPool(object):
                  retry_max=3, retry_delay=.1,
                  timeout=-1, max_lifetime=600.,
                  max_size=10, options=None,
-                 reap_connections=True, backend="thread"):
+                 reap_connections=True, reap_delay=1,
+                 backend="thread"):
 
         if isinstance(backend, str):
             self.backend_mod = load_backend(backend)
@@ -75,6 +76,7 @@ class ConnectionPool(object):
 
         self._reaper = None
         if reap_connections:
+            self.reap_delay = reap_delay
             self.start_reaper()
 
     def too_old(self, conn):
@@ -94,7 +96,7 @@ class ConnectionPool(object):
 
     def start_reaper(self):
         self._reaper = self.backend_mod.ConnectionReaper(self,
-                delay=self.max_lifetime)
+                delay=self.reap_delay)
         self._reaper.ensure_started()
 
     def _reap_connection(self, conn):
@@ -197,4 +199,3 @@ class ConnectionPool(object):
             conn.handle_exception(e)
         finally:
             self.release_connection(conn)
-
