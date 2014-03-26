@@ -4,7 +4,6 @@
 # See the NOTICE for more information.
 
 import contextlib
-import sys
 import time
 
 from socketpool.util import load_backend
