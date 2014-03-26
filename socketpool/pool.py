@@ -63,12 +63,10 @@ class ConnectionPool(object):
         self.timeout = timeout
         self.max_lifetime = max_lifetime
         if options is None:
-            self.options = {"backend_mod": self.backend_mod,
-                            "pool": self}
+            self.options = {"backend_mod": self.backend_mod}
         else:
             self.options = options
             self.options["backend_mod"] = self.backend_mod
-            self.options["pool"] = self
 
         # bounded semaphore to make self._alive 'safe'
         self._sem = self.backend_mod.Semaphore(1)
@@ -77,6 +75,9 @@ class ConnectionPool(object):
         if reap_connections:
             self.reap_delay = reap_delay
             self.start_reaper()
+
+    def __del__(self):
+        self.stop_reaper()
 
     def too_old(self, conn):
         return time.time() - conn.get_lifetime() > self.max_lifetime
@@ -97,6 +98,9 @@ class ConnectionPool(object):
         self._reaper = self.backend_mod.ConnectionReaper(self,
                 delay=self.reap_delay)
         self._reaper.ensure_started()
+
+    def stop_reaper(self):
+        self._reaper.forceStop = True
 
     def _reap_connection(self, conn):
         if conn.is_connected():
@@ -127,6 +131,9 @@ class ConnectionPool(object):
 
     def get(self, **options):
         options.update(self.options)
+        # Do not set this in self.options so we don't keep a persistent
+        # reference on the pool which would prevent garbage collection.
+        options["pool"] = self
 
         found = None
         i = self.pool.qsize()
