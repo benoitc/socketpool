@@ -3,7 +3,7 @@
 # This file is part of socketpool.
 # See the NOTICE for more information.
 
-import unittest
+import pytest
 
 from socketpool import ConnectionPool, Connector
 from socketpool.pool import MaxTriesError
@@ -19,10 +19,8 @@ class MessyConnector(Connector):
     def invalidate(self):
         pass
 
-
-class PoolTestCase(unittest.TestCase):
-
+class Test_Pool(object):
     def test_size_on_isconnected_failure(self):
         pool = ConnectionPool(MessyConnector)
-        self.assert_(pool.size == 0)
-        self.assertRaises(MaxTriesError, pool.get)
+        assert pool.size == 0
+        pytest.raises(MaxTriesError, pool.get)
