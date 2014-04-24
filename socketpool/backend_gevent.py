@@ -8,8 +8,6 @@ from gevent import select
 from gevent import socket
 from gevent import queue
 
-from socketpool.pool import ConnectionPool
-
 try:
     from gevent import lock
 except ImportError:

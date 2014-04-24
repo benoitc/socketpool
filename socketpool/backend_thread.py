@@ -7,6 +7,7 @@ import select
 import socket
 import threading
 import time
+import weakref
 
 try:
     import Queue as queue
@@ -37,9 +38,10 @@ class ConnectionReaper(threading.Thread):
     connections after a delay """
 
     running = False
+    forceStop = False
 
     def __init__(self, pool, delay=600):
-        self.pool = pool
+        self.pool = weakref.ref(pool)
         self.delay = delay
         threading.Thread.__init__(self)
         self.setDaemon(True)
@@ -48,10 +50,14 @@ class ConnectionReaper(threading.Thread):
         self.running = True
         while True:
             time.sleep(self.delay)
-            self.pool.murder_connections()
+            pool = self.pool()
+            if pool is not None:
+                pool.murder_connections()
+
+            if self.forceStop:
+                self.running = False
+                break
 
     def ensure_started(self):
         if not self.running and not self.isAlive():
             self.start()
-
-
