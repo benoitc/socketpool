@@ -78,9 +78,11 @@ class UnixConnector(Connector):
 
 class TcpConnector(Connector):
 
-    def __init__(self, host, port, backend_mod, pool=None):
+    def __init__(self, host, port, backend_mod, pool=None, mode='r',
+                 bufsize=-1):
         self._s = backend_mod.Socket(socket.AF_INET, socket.SOCK_STREAM)
         self._s.connect((host, port))
+        self._s_file = self._s.makefile(mode, bufsize)
         self.host = host
         self.port = port
         self.backend_mod = backend_mod
@@ -113,6 +115,7 @@ class TcpConnector(Connector):
 
     def invalidate(self):
         self._s.close()
+        self._s_file.close()
         self._connected = False
         self._life = -1
 
@@ -122,6 +125,18 @@ class TcpConnector(Connector):
                 self._pool.release_connection(self)
             else:
                 self._pool = None
+
+    def read(self, size=-1):
+        return self._s_file.read(size)
+
+    def readline(self, size=-1):
+        return self._s_file.readline(size)
+
+    def readlines(self, sizehint=0):
+        return self._s_file.readlines(sizehint)
+
+    def sendall(self, *args):
+        return self._s.sendall(*args)
 
     def send(self, data):
         return self._s.send(data)
