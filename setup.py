@@ -22,8 +22,8 @@ CLASSIFIERS = [
 
 
 # read long description
-with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
-    long_description = f.read()
+with open(os.path.join(os.path.dirname(__file__), 'README.rst'), 'rb') as f:
+    long_description = f.read().decode('utf-8')
 
 DATA_FILES = [
         ('socketpool', ["LICENSE", "MANIFEST.in", "NOTICE", "README.rst",
