@@ -79,8 +79,8 @@ class ConnectionPool(object):
     def __del__(self):
         self.stop_reaper()
 
-    def too_old(self, conn):
-        return time.time() - conn.get_lifetime() > self.max_lifetime
+    def too_old(self, conn, _time=time.time):
+        return _time() - conn.get_lifetime() > self.max_lifetime
 
     def murder_connections(self):
         current_pool_size = self.pool.qsize()
